@@ -1,0 +1,50 @@
+{
+  "min_packer_version": "0.12.0",
+  "variables": {
+    "subscription_id": "{{env `ARM_SUBSCRIPTION_ID`}}",
+    "tenant_id": "{{env `ARM_TENANT_ID`}}",
+    "client_id": "{{env `ARM_CLIENT_ID`}}",
+    "client_secret": "{{env `ARM_CLIENT_SECRET`}}",
+    "resource_group_name": "rg-hashicorp-demo",
+    "image_name": "ubuntu-nginx"
+  },
+  "builders": [
+    {
+      "type": "azure-arm",
+      "client_id": "6716e67b-cc8d-4a34-84c3-1659d358e7a0",
+      "client_secret": "c59ae0b1-0f18-4a9e-8c36-5cd54119f5ba",
+      "tenant_id": "bbb8d215-8a00-4b3a-a546-30de29a9d488",
+      "subscription_id": "32b732ea-eed0-48cc-be1a-178840791836",
+
+      "managed_image_resource_group_name": "{{user `resource_group_name`}}",
+      "managed_image_name": "{{user `image_name`}}",
+
+      "os_type": "Linux",
+      "image_publisher": "Canonical",
+      "image_offer": "UbuntuServer",
+      "image_sku": "16.04-LTS",
+
+      "azure_tags": {
+        "dept": "Engineering",
+        "task": "Image deployment"
+      },
+
+      "location": "East US",
+      "vm_size": "Standard_B1ls"
+    }
+  ],
+  "provisioners": [
+    {
+      "execute_command": "chmod +x {{ .Path }}; {{ .Vars }} sudo -E sh '{{ .Path }}'",
+      "inline": [
+        "apt-get update",
+        "apt-get upgrade -y",
+        "apt-get -y install nginx",
+
+        "/usr/sbin/waagent -force -deprovision+user && export HISTSIZE=0 && sync"
+      ],
+      "inline_shebang": "/bin/sh -x",
+      "type": "shell"
+    }
+  ]
+}

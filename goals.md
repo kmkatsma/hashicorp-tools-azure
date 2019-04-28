@@ -1,0 +1,11 @@
+- use packer to create server image with consul
+  - image auto connect to consul network
+- user packer to create client image with consul
+  - image auto connect to consul network
+- use terraform to deploy consul cluster
+- switched to use vm based consul approach from different example
+- create consul agent vm
+- add docker extension to consul agent vm
+  - https://www.c-sharpcorner.com/article/hosting-docker-container-on-azure-linux-vms/
+- create container with node js app that registers with consul
+- use nomad to schedule node js containers...reach

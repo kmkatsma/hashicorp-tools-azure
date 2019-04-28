@@ -1,0 +1,11 @@
+web:
+  name: example-service
+  port: 3001
+consul:
+  host: localhost
+  port: 8500
+  service:
+    id: null
+    name: example-service
+  config:
+    key: example-service-dev
