@@ -12,3 +12,4 @@ variables.sh
 *.tfstate
 *.tfstate.backup
 */node_modules/
+*/dist/
