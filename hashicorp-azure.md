@@ -1,31 +1,39 @@
 # HashiCorp Products on Azure
 
-## Four Maturity Paths on Azure
+## Infrastructure Abstraction Levels on Azure
 
-### Lift and Shift with Cloud Features
+### Instractructure as a Service - IaaS
 
-- Bringing resources over from On-Premise As Is
-- Integrate Cloud IaaS functionality where appropriate
-- Hybrid Cloud scenarios
-- Eventually Migrate to one of following three options.
+- Examples:
+  - Lift and Shift
+  - IaaS-based Cloud Native
+- Potential Needs:
+  - Hybrid Cloud scenarios
+  - Multi-Cloud scenarios
+  - Extreme Scale
+  - Resource Provisioning, Scaling
+  - Container or VM scheduling
+  - Secret Management
 
-### PaaS-Centric
+### Platform as a Service (PaaS) / Functions as a Service (FaaS aka Serverless)
 
-- Migrating On-Premise IaaS to PaaS directly
-- Utilize App Services, Azure SQL, etc As complement to Azure Native Features
-- New Development in PaaS features like App Services, Logic Apps, Function Apps.
+- Examples:
+  - Migrating On-Premise IaaS to PaaS directly
+  - New development as PaaS/FaaS
+- Potential Needs:
+  - Resource Provisioning
+  - Secret Management
 
-### Kubernetes on AKS
+### CaaS (Containers as a Service) - i.e., Kubernetes on AKS
 
-- Cloud Native strategy built on Kubernetes architecture
-- Need to utilize add-ons/plug-ins to Kubernetes
-- May need Cross-Cluster functionality
-
-### Cloud Native IaaS
-
-- Internet-Scale solutions built on Cloud Infrastructure
-- Multi-Cloud scenarios
-- Need to maximize performance, scalability
+- Examples:
+  - Kubernetes
+  - Mesosphere
+  - Nomad container scheduling
+- Potential Needs:
+  - Resource Provisioning
+  - Cross-Cluster or external service access
+  - Secret Management
 
 ### Hashiform Tools for PaaS-Centric : Complement to Azure Native Features
 

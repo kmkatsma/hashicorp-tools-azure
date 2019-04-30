@@ -89,22 +89,27 @@ ssh -A -i azure-user@40.83.169.12
  ssh azure-user@10.0.96.4
 ```
 
-- run docker with commands below (linux example). First will run interactively
+- run docker with commands below (linux example). First will run interactively, so better to do 2nd so can then test.
 
 ```
 sudo docker run -it -p 3002:3002 --network=host  kmkatsma/ts-nest-consul-app2:basic
 sudo docker run -d -p 3002:3002  --network=host --restart=always kmkatsma/ts-nest-consul-app2:basic
 ```
 
-- run curl
+- after docker launched, run curl command below on the consul agent, and will see 'example' service listed. The node app started and registered itself.
 
-## steps to deal with issues in azure-consul solution
+```
+curl http://127.0.0.1:8500/v1/agent/services
+```
+
+## Issues in azure-consul solution
 
 - Enable OpenSSH on windows10 (creates windows service; start it)
 - chmod doesn't work on windows machines
-  -- Must copy the output private key in the deploy into private.pem manually
-  -- Change the permissions to remove all but full control for owner
-  -- Then ssh-add the private.pem file, and can ssh using the keys
+  - Must copy the output private key in the deploy into private.pem manually
+  - alternative is to install cygwin64, add to path
+  - Change the permissions to remove all but full control for owner
+  - Then ssh-add the private.pem file, and can ssh using the keys
 - issues - re-runs of terraform always trigger the exec to create a new ssh key
-  -- seems like need to update that will create ssh on first run if needed, but use private-pem if finds it
-  -- seems like this _is_ in the scripts, but not functioning
+  - seems like need to update that will create ssh on first run if needed, but use private-pem if finds it
+  - seems like this _is_ in the scripts, but not functioning

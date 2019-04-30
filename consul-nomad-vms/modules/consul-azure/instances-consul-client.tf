@@ -50,7 +50,7 @@ resource "azurerm_virtual_machine_extension" "test" {
   name                 = "hostname"
   location             = "${var.location}"
   resource_group_name  = "${var.resource_group_name}"
-  virtual_machine_name = "${var.consul_datacenter}-client1"
+  virtual_machine_name = "${azurerm_virtual_machine.consul-client.name}"
   publisher            = "Microsoft.Azure.Extensions"
   type                 = "DockerExtension"
   type_handler_version = "1.0",

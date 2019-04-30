@@ -228,41 +228,7 @@ sudo systemctl start consul
 
 echo "Completed Configuration of Consul Node. Run 'consul members' to view cluster information."
 
-
-####################
-# Set up Nomad User
-####################
-NUSER="nomad"
-NCOMMENT="Nomad"
-NGROUP="nomad"
-NHOME="/srv/nomad"
-
-echo "Creating Nomad user"
-
-nomad_user_ubuntu() {
-  # UBUNTU user setup
-  if ! getent group $${GROUP} >/dev/null
-  then
-    sudo addgroup --system $${GROUP} >/dev/null
-  fi
-
-  if ! getent passwd $${USER} >/dev/null
-  then
-    sudo adduser \
-      --system \
-      --disabled-login \
-      --ingroup $${NGROUP} \
-      --home $${NHOME} \
-      --no-create-home \
-      --gecos "$${NCOMMENT}" \
-      --shell /bin/false \
-      $${NUSER}  >/dev/null
-  fi
-}
-
-echo "Setting up user $${USER} for Debian/Ubuntu"
-nomad_user_ubuntu
-
+ 
 
 
 ##############################
@@ -309,11 +275,10 @@ After=network-online.target
 
 [Service]
 Restart=on-failure
-ExecStart=/usr/local/bin/nomad agent -config /etc/nomad.d/client.hcl
+ExecStart=/usr/local/bin/nomad agent -config /etc/nomad.d
 ExecReload=/bin/kill -HUP $MAINPID
 KillSignal=SIGTERM
-User=nomad
-Group=nomad
+RestartSec=2
 
 [Install]
 WantedBy=multi-user.target
