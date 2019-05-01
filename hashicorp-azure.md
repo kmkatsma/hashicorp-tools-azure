@@ -61,8 +61,8 @@ From highest levels of abstraction to lowest, they are PaaS, CaaS, IaaS.
 - Running Containers in VM, scheduled by Nomad
   - But Not limited to containers!
 - Packer images - VM definitions can be converted to reusable, fixed Images.
-- Can add Vault for robust secret management - certificates, passwords.
-- As you use more HashiCorp tools, you will find that the value you can get from each tool increases synergistically.
+- Could add Vault for secret management - certificates, passwords, etc.
+- As you use more HashiCorp tools, you will find that the value you can get from each tool increases (i.e., platform synergism).
   - For example, in the solution, Nomad automatically detects and connects to Consul
 
 ### Why Terraform?
@@ -100,25 +100,18 @@ From highest levels of abstraction to lowest, they are PaaS, CaaS, IaaS.
 
 # Why HashiCorp?
 
-- Beyond the tooling, what does HashiCorp offer?
-- Cloud agnostic. Tools to integrate across clouds; don't really care which cloud.
+- Beyond the tooling itself, why partner with HashiCorp?
+- Cloud agnostic. We don't make the cloud, we make building with it easier.
 - Doesn't even matter _if_ you use cloud.
+- History of innovation
 - Products Focused on Doing One Thing Well
   - Products that try to do everything don't do anything very well
   - Non-Opiniated - tools integrate, but you are not forced into integrations.
   - Can use side-by-side to enhance native cloud resources
-- Future Proofed:
+- Future Proof:
   - Suport for wherever you are at now on cloud integration path.
   - Base tooling will never need to change.
   - Single toolset to learn.
   - Core tooling all open source.
 - The TAO of HashiCorp
-  - https://www.hashicorp.com/tao-of-hashicorp
-  - Workflows, Not Technologies
-  - Simple, Modular, Composable
-  - Communicating Sequential Processes
-  - Immutability
-  - Versioning through Codification
-  - Automation through Codification
-  - Resilient Systems
-  - Pragmatism
+  - For an in-depth discussion of why we do what what we do: https://www.hashicorp.com/tao-of-hashicorp

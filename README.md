@@ -1,13 +1,33 @@
 # Technical Guide to Repo
 
-There's several subprojects folders containing different components/approaches to solution
+## Initial goals
 
-- **consul-app-service** - node app for working with consul, uses nestjs cloud libary that could not compile in docker
-- **consul-app-service2** - stripped down node app for working with consul, using only npm consul package
-- **consul-scaleset** - terraform/packer image based solution for deploying consul to azure with scaleset. Based on https://github.com/hashicorp/terraform-azurerm-consul. Numerous problems with this solution, which was apparently cloned from AWS solution and is not fully baked for Azure
-- **consul-vms** - terraform/vm solution for deploying consul cluster to azure, with jumpboxe. Based on https://github.com/hashicorp/azure-consul. Added an Ubunto client consul VM.
-- **consul-nomad-vms** - terraform/vm solution for deploying consult + nomad to azure, with jumpbox. Based on [https://github.com/hashicorp/azure-consul]. with additional Nomad configuration added. Also added Ubunto client consul/nomad VM.
-- **packer-images** - containers initial test nginx image, and packer image for consul used with consul-scaleset.
+- See [goals](goals.md) for list of goals of the solutions contained within the repo.
+
+## Repo structure
+
+-There are several subprojects folders containing different components/approaches to solution:
+
+- **consul-app-service**
+  - node app for working with consul, uses nestjs cloud libary that could not compile in docker
+- **consul-app-service2**
+  - basic node app for working with consul, using only npm consul package
+  - used to create a container for running directly on client VM, or scheduled via nomad
+- **consul-scaleset**
+  - terraform/packer image based solution for deploying consul to azure with scaleset.
+  - Based on https://github.com/hashicorp/terraform-azurerm-consul
+  - Numerous problems with this solution, which was apparently cloned from AWS solution and is not fully baked for Azure
+- **consul-vms**
+  - Terraform/vm solution for deploying consul cluster to azure, with jumpboxes.
+  - Based on https://github.com/hashicorp/azure-consul.
+  - Added an Ubunto client consul VM.
+- **consul-nomad-vms**
+  - Terraform/vm solution for deploying consult + nomad to azure, with jumpbox.
+  - Based on [https://github.com/hashicorp/azure-consul]. with additional Nomad configuration added.
+  - Also added Ubunto client consul/nomad VM.
+  - Includes config for nomad job for running docker image build from **consul-app-service2**
+- **packer-images**
+  - contains initial test nginx image and packer image for consul used with **consul-scaleset.**
 
 ## Requirements for running Terraform scripts with azure (using local state)
 
@@ -37,38 +57,42 @@ setx ARM_CLIENT_SECRET XXXXXX
 
 - download and install terraform and packer exes, add location to path
 
-## Create image from terraform-azurm-consul
+# Solution Overviews
 
-- packer build ubuntu-consul.json
-- create vm from image syntax
+## Consul Cluster solution
+
+- Based on example solution here: https://github.com/hashicorp/terraform-azurerm-consul
+- Designed to deploy packer image as a VM in a scaleset in azure
+- This solution is cut and paste conversion of the AWS cluster solution, and the necessary changes to run in Azure are incomplete.
+
+### Packer Imagage
+
+- Create Packer VM image from consul example at https://github.com/hashicorp/terraform-azurerm-consul
+- Run packer to create image with this command:
 
 ```
-az vm create --resource-group rg-hashicorp-demo --name vm-ubuntu-nginx --image ubuntu-nginx --admin-username azureuser --generate-ssh-keys
+packer build ubuntu-consul.json
 ```
 
-- open port to vm syntax
+- create vm from image with this syntax
 
 ```
-az vm open-port --resource-group rg-hashicorp-demo --name vm-ubuntu-nginx --port 80
+az vm create --resource-group rg-hashicorp-demo --name vm-ubuntu-consul --image ubuntu-consul --admin-username azureuser --generate-ssh-keys
 ```
 
-# Consul Cluster solution
+### Problems with consul-cluster implementation
 
-- based on example solution here: https://github.com/hashicorp/terraform-azurerm-consul
-- this solution is cut and paste conversion of the AWS cluster solution, and the necessary changes to run in Azure are incomplete. See below for some issues.
-
-## Problems with consul-cluster implementation
-
-- module "consul_cluster" has incorrect arguments for consul_run
+- Terrform Module "consul_cluster" has incorrect arguments for consul_run
+- No examples on how to create clients, add to cluster
 - extra/missing variables, incorrectly named
-- no examples on how to add clients into cluster
 - no logic to generate ssh keys
 - no way to view AMI id - added command into the packer steps
+- no jumpbox for VM's, not clear how to connect
 
-# Consul VMs solution
+## Consul VMs solution
 
-- based on the example solution here https://github.com/hashicorp/azure-consul s
-- created copy of needed files in consul-vms folder in repo.
+- Based on the example solution here https://github.com/hashicorp/azure-consul s
+- created copy of needed files in **consul-vms** folder in repo.
 - To execute:
 
   - change directory to consul-vms/single-region
@@ -81,7 +105,7 @@ az vm open-port --resource-group rg-hashicorp-demo --name vm-ubuntu-nginx --port
   - run consul members to see that that are running.
   - use the instructions [here](docker-run-notes.md) to start docker container manually, and check that consul lists service
 
-## Issues in azure-consul solution
+### Challenges in azure-consul solution
 
 - Enable OpenSSH on windows10 (creates windows service; start it)
 - chmod doesn't work on windows machines
@@ -93,7 +117,7 @@ az vm open-port --resource-group rg-hashicorp-demo --name vm-ubuntu-nginx --port
   - seems like need to update that will create ssh on first run if needed, but use private-pem if finds it
   - seems like this _is_ in the scripts, but not functioning
 
-# Nomad + Consul solution
+## Nomad + Consul solution
 
 - The consul-In the consul-nomad-vms folder builds on the consul-vms solution and adds nomad configuration for the vm servers and client.
 - Additional configuration for running nomad under systemd is added to the
@@ -110,3 +134,12 @@ az vm open-port --resource-group rg-hashicorp-demo --name vm-ubuntu-nginx --port
   - use the instructions [here](docker-run-notes.md) to start docker container manually, and check that consul lists service
   - can run nomad status to verify nomad is running.
   - to schedule with nomad, stop the docker container, and then follow instructions for running nomad job [here](nomad-run-notes.md)
+
+### Challenges in Nomad/Consul
+
+- Figuring out how to get nomad to run under systemd
+  - copying config used for consul did not work directly - needed to drop use of created user
+- Figuring out how to get the job not to time out.
+  - Timeouts at both the agent and the job level to override
+- Eventually extended both timeouts, also installed the docker image directly on VM
+- Hoped to convert the VM process to Packer image, but some depth to this
