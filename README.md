@@ -2,11 +2,12 @@
 
 There's several subprojects folders containing different components/approaches to solution
 
-- consul-app-service - node app for working with consul, uses nestjs cloud libary that could not compile in docker
-- consul-app-service2 - stripped down node app for working with consul, using only npm consul package
-- consul-scaleset - terraform/packer image based solution for deploying consul to azure with scaleset. Based on [https://github.com/hashicorp/terraform-azurerm-consul]. Numerous problems with this solution, which was apparently cloned from AWS solution and is not fully baked for Azure
-- consult-vms - terraform/vm solution for deploying consul cluster to azure, with jumpboxes for consul servers. based on [https://github.com/hashicorp/azure-consul]. Added an Ubunto client consul VM.
-- packer-images - containers initial test nginx image, and packer image for consul used with consul-scaleset.
+- **consul-app-service** - node app for working with consul, uses nestjs cloud libary that could not compile in docker
+- **consul-app-service2** - stripped down node app for working with consul, using only npm consul package
+- **consul-scaleset** - terraform/packer image based solution for deploying consul to azure with scaleset. Based on https://github.com/hashicorp/terraform-azurerm-consul. Numerous problems with this solution, which was apparently cloned from AWS solution and is not fully baked for Azure
+- **consul-vms** - terraform/vm solution for deploying consul cluster to azure, with jumpboxe. Based on https://github.com/hashicorp/azure-consul. Added an Ubunto client consul VM.
+- **consul-nomad-vms** - terraform/vm solution for deploying consult + nomad to azure, with jumpbox. Based on [https://github.com/hashicorp/azure-consul]. with additional Nomad configuration added. Also added Ubunto client consul/nomad VM.
+- **packer-images** - containers initial test nginx image, and packer image for consul used with consul-scaleset.
 
 ## Requirements for running Terraform scripts with azure (using local state)
 
@@ -32,11 +33,11 @@ setx ARM_CLIENT_ID XXXXX
 setx ARM_CLIENT_SECRET XXXXXX
 ```
 
-## local installs of terraform, packer
+## Local installs of terraform, packer
 
 - download and install terraform and packer exes, add location to path
 
-## create image from terraform-azurm-consul
+## Create image from terraform-azurm-consul
 
 - packer build ubuntu-consul.json
 - create vm from image syntax
@@ -51,9 +52,12 @@ az vm create --resource-group rg-hashicorp-demo --name vm-ubuntu-nginx --image u
 az vm open-port --resource-group rg-hashicorp-demo --name vm-ubuntu-nginx --port 80
 ```
 
-# https://github.com/hashicorp/terraform-azurerm-consul
+# Consul Cluster solution
 
-## problems with consul-cluster implementation
+- based on example solution here: https://github.com/hashicorp/terraform-azurerm-consul
+- this solution is cut and paste conversion of the AWS cluster solution, and the necessary changes to run in Azure are incomplete. See below for some issues.
+
+## Problems with consul-cluster implementation
 
 - module "consul_cluster" has incorrect arguments for consul_run
 - extra/missing variables, incorrectly named
@@ -61,46 +65,21 @@ az vm open-port --resource-group rg-hashicorp-demo --name vm-ubuntu-nginx --port
 - no logic to generate ssh keys
 - no way to view AMI id - added command into the packer steps
 
-# https://github.com/hashicorp/azure-consul solution
+# Consul VMs solution
 
-- deployed default configuration
-- run terraform output command and capture info for "jumphost_westus_ssh_connection_strings" setting, should see something like:
+- based on the example solution here https://github.com/hashicorp/azure-consul s
+- created copy of needed files in consul-vms folder in repo.
+- To execute:
 
-```
-jumphost_westus_ssh_connection_strings = [
-    ssh-add private_key.pem && ssh -A -i private_key.pem azure-user@40.83.169.18
-]
-```
-
-- the information can be used from command shell to connect to jumpbox created by terraform deploy
-
-```
-ssh -A -i azure-user@40.83.169.12
-```
-
-- once connected to jumpbox, can use 'consul members' command to see consul servers.
-
-- added scripts to create consul client vm
-  - config with docker installed
-- redeployed terraform; client 1 created
-- ssh into client1 server with below command
-
-```
- ssh azure-user@10.0.96.4
-```
-
-- run docker with commands below (linux example). First will run interactively, so better to do 2nd so can then test.
-
-```
-sudo docker run -it -p 3002:3002 --network=host  kmkatsma/ts-nest-consul-app2:basic
-sudo docker run -d -p 3002:3002  --network=host --restart=always kmkatsma/ts-nest-consul-app2:basic
-```
-
-- after docker launched, run curl command below on the consul agent, and will see 'example' service listed. The node app started and registered itself.
-
-```
-curl http://127.0.0.1:8500/v1/agent/services
-```
+  - change directory to consul-vms/single-region
+  - run terraform init
+  - run terraform apply, confirm with yes
+  - if on windows, the creation of private_key.pem seems to fail consistently. To do ssh, the output for the private key must be saved manually into private_key.pem file after terraform apply completes. This file permissions must be modified to only allow owner full access, and no other inherited access.
+  - after completion of the terraform deploy (and private key creation), run terraform output to get list of ports for SSH.
+  - wait a few minutes for server setup to complete in background (install of consul takes few minutes as this happens at startup of VMs)
+  - use the instructions [here](ssh.md) for SSH to jumpbox, then SSH to one of the servers.
+  - run consul members to see that that are running.
+  - use the instructions [here](docker-run-notes.md) to start docker container manually, and check that consul lists service
 
 ## Issues in azure-consul solution
 
@@ -110,6 +89,24 @@ curl http://127.0.0.1:8500/v1/agent/services
   - alternative is to install cygwin64, add to path
   - Change the permissions to remove all but full control for owner
   - Then ssh-add the private.pem file, and can ssh using the keys
-- issues - re-runs of terraform always trigger the exec to create a new ssh key
+- Re-runs of terraform always trigger the exec to create a new ssh key
   - seems like need to update that will create ssh on first run if needed, but use private-pem if finds it
   - seems like this _is_ in the scripts, but not functioning
+
+# Nomad + Consul solution
+
+- The consul-In the consul-nomad-vms folder builds on the consul-vms solution and adds nomad configuration for the vm servers and client.
+- Additional configuration for running nomad under systemd is added to the
+- To run this example:
+  - make sure environment variables have been set as per references at start of README.
+  - change directory to consul-nomad-vms/single-region folder
+  - run terrform init
+  - run terraform apply, confirm with yes
+  - if on windows, the creation of private_key.pem seems to fail consistently. To do ssh, the output for the private key must be saved manually into private_key.pem file after terraform apply completes. This file permissions must be modified to only allow owner full access, and no other inherited access.
+  - after completion of the terraform deploy (and private key creation), run terraform output to get list of ports for SSH.
+  - wait a few minutes for server setup to complete in background (install of consul/nomad takes few minutes as this happens at startup of VMs)
+  - use the instructions [here](ssh.md) for SSH to jumpbox, then SSH to one of the servers.
+  - run consul members to see that that are running.
+  - use the instructions [here](docker-run-notes.md) to start docker container manually, and check that consul lists service
+  - can run nomad status to verify nomad is running.
+  - to schedule with nomad, stop the docker container, and then follow instructions for running nomad job [here](nomad-run-notes.md)

@@ -1,64 +1,71 @@
-# HashiCorp Products on Azure
+# HashiCorp Tools with Azure
 
 ## Infrastructure Abstraction Levels on Azure
 
-### Instractructure as a Service - IaaS
+There are currently three fundamental levels of infrastructure abstraction supported by Azure. HashiCorp has tools that can help with all three, though the extent to which they can be used, and the value they can provide will in general increase futher down the abstraction layers.
 
-- Examples:
-  - Lift and Shift
-  - IaaS-based Cloud Native
-- Potential Needs:
-  - Hybrid Cloud scenarios
-  - Multi-Cloud scenarios
-  - Extreme Scale
-  - Resource Provisioning, Scaling
-  - Container or VM scheduling
-  - Secret Management
+From highest levels of abstraction to lowest, they are PaaS, CaaS, IaaS.
 
 ### Platform as a Service (PaaS) / Functions as a Service (FaaS aka Serverless)
 
+- Azure provides managed environments, using native Azure platform components.
 - Examples:
+  - Azure Functions, Azure AppService
+- Use Cases:
   - Migrating On-Premise IaaS to PaaS directly
-  - New development as PaaS/FaaS
-- Potential Needs:
-  - Resource Provisioning
-  - Secret Management
+  - New development as PaaS/FaaS, want to focus on application development without concern for how the application is running.
+- Limitations:
+  - Lack of control/customization
+  - Cloud Vendor Lock-In.
+  - No Cross-Cloud support
+- Relevant HashiCorp Tools:
+  - Terraform for Resource Provisioning
+  - Consul for Cross-Cloud communication (low)
+  - Vault for Secret Management (low)
 
-### CaaS (Containers as a Service) - i.e., Kubernetes on AKS
+### Containers as a Service (CaaS)
 
+- Container-based applications deployed into a "cluster" hosted by a PaaS or IaaS based cluster management framework.
 - Examples:
-  - Kubernetes
-  - Mesosphere
-  - Nomad container scheduling
-- Potential Needs:
-  - Resource Provisioning
-  - Cross-Cluster or external service access
-  - Secret Management
+  - Kubernetes, Mesosphere, Service Fabric
+- Use Cases:
+  - Cloud development built with technologies that can use containerization
+- Limitations:
+  - CaaS - Must use tools capable of containerization; can only run containers.
+  - Service Fabric - only .NET currently
+  - Highly opinionated
+  - Limited or no built-in support for cross-cluster or cloud.
+- Relevant HashiCorp Tools:
+  - Terraform for Resource Provisioning
+  - Consul for cross-cluster or external service access
+  - Vault for Secret Management
 
-### Hashiform Tools for PaaS-Centric : Complement to Azure Native Features
+### Infrastructure as a Service (IaaS)
 
-- **Terraform** for Managing Resources
-  - Enterprise version for management and prevention of sprawl.
-- **Vault** for robust Secret Management
-  - Ideally provide a SaaS/PaaS Vault for client!
-- **Consul** for Vault BackEnd
+- Custom applications built directly on Cloud-based implementations of Network, Storage, and Compute.
+- Examples:
+  - Lift and Shift applications to the cloud
+  - High Scale Cloud Native Architectures
+- Limitations:
+  - The imagination of the architects involved
+- Relevant HashiCorp Tools:
+  - Consul for Hybrid and Multi-Cloud scenarios
+  - Terraform for Resource Provisioning
+  - Nomad for Container or VM scheduling, scaling
+  - Vault for Secret Management
 
-### Approach #2: Completement to Kubernetes on AKS
+## The Example Solution
 
-- **Consul** for robust Service Discovery and Cross-Cluster communication
-- **Vault** for improved Secret Management
-- **Terraform** for management of Azure Resources _and_ Deployments in K8s clusters.
+- An IaaS-based Consul and Nomad cluster, deployed with Terraform
+- Provides maximum flexibility, performance, and control
+- Running Containers in VM, scheduled by Nomad
+  - But Not limited to containers!
+- Packer images - VM definitions can be converted to reusable, fixed Images.
+- Can add Vault for robust secret management - certificates, passwords.
+- As you use more HashiCorp tools, you will find that the value you can get from each tool increases synergistically.
+  - For example, in the solution, Nomad automatically detects and connects to Consul
 
-### Approach #3: Full Suite for massive scale, multi-cloud, hybrid-cloud scenarios
-
-- **Terraform** for infrastructure across cloud and on-prem resources
-- **Consul** for service discovery across _all_ environments
-- **Key Vault** for centralized secret management
-- **Nomad** for scheduling to _all_ environments, at largest cloud scale levels
-
-## HashiCorp Tools in the Azure Ecosystem
-
-### Why Terraform in Azure?
+### Why Terraform?
 
 - Logical first step in integrating HashiCorp tool suite into Azure - always need a way to manage resources.
 - Integration with Azure DevOps to replace ARM Templates.
@@ -70,20 +77,14 @@
 - Can use to deploy on-premise, and into Kubernetes clusters.
 - Use Terraform Enterprise to define rules for management and policy.
 
-### Why Vault in Azure?
-
-- Azure KeyVault is good as a backend, but _management_ of the keys is lacking
-- Vault can automate creation, renewal of secrets.
-- Let Vault do the heavy lifting; complex key management behavior should not fall to developers.
-
-### Why Consul in Azure?
+### Why Consul?
 
 - Ability to eliminate NSG configuration layers in network architecture.
 - Software defined routing and security.
 - Manage and enforce TLS between all connected resources.
 - Robustness and features not available in traditional Load Balancer.
 
-### Why Nomad in Azure?
+### Why Nomad?
 
 - Non-opinionated scheduler
 - Supports cloud and on-premise
@@ -91,8 +92,15 @@
 - Not limited to only docker containers - can handle processes, containers, VM's
 - Can utilize Azure DevOps to wrap Nomad for developers
 
+### Why Vault?
+
+- Azure KeyVault is good as a backend, but _management_ of the keys is lacking
+- Vault can automate creation, renewal of secrets.
+- Let Vault do the heavy lifting; complex key management behavior should not fall to developers.
+
 # Why HashiCorp?
 
+- Beyond the tooling, what does HashiCorp offer?
 - Cloud agnostic. Tools to integrate across clouds; don't really care which cloud.
 - Doesn't even matter _if_ you use cloud.
 - Products Focused on Doing One Thing Well
@@ -104,3 +112,13 @@
   - Base tooling will never need to change.
   - Single toolset to learn.
   - Core tooling all open source.
+- The TAO of HashiCorp
+  - https://www.hashicorp.com/tao-of-hashicorp
+  - Workflows, Not Technologies
+  - Simple, Modular, Composable
+  - Communicating Sequential Processes
+  - Immutability
+  - Versioning through Codification
+  - Automation through Codification
+  - Resilient Systems
+  - Pragmatism

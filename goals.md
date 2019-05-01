@@ -8,4 +8,5 @@
 - add docker extension to consul agent vm
   - https://www.c-sharpcorner.com/article/hosting-docker-container-on-azure-linux-vms/
 - create container with node js app that registers with consul
-- use nomad to schedule node js containers...reach
+- add nomad to vms created in cluster
+- use nomad to schedule node js containers

@@ -259,6 +259,7 @@ data_dir   = "/etc/nomad.d"
 
 client {
   enabled = true
+  max_kill_timeout = "600s"
 }
 EOF
 
